@@ -1,5 +1,7 @@
 package com.github.shinkou.sitecrawler.crawler.crawler;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +12,7 @@ import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
+import edu.uci.ics.crawler4j.crawler.authentication.AuthInfo;
 import edu.uci.ics.crawler4j.crawler.authentication.FormAuthInfo;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
@@ -22,6 +25,71 @@ public class AuthCrawler extends WebCrawler
 		= Pattern.compile(".*(\\.(css|js|gif|jpg|png|mp3|mp4|zip|gz))$");
 
 	protected static Set<String> domains = new HashSet<>();
+
+	private static AuthInfo getAuthInfo(Map<String, String> props)
+		throws MalformedURLException
+	{
+		AuthInfo out = null;
+
+		StringBuilder username = new StringBuilder();
+		StringBuilder password = new StringBuilder();
+		StringBuilder loginUrl = new StringBuilder();
+		StringBuilder usernameFormStr = new StringBuilder();
+		StringBuilder passwordFormStr = new StringBuilder();
+
+		props.forEach
+		((k, v) -> {
+			switch(k)
+			{
+			// login username
+			case "username":
+				username.append(v);
+				break;
+			// login password
+			case "password":
+				password.append(v);
+				break;
+			// login URL where info is submitted to
+			case "form.action":
+				loginUrl.append(v);
+				break;
+			// name attribute of the username form field
+			case "form.input.username.name":
+				usernameFormStr.append(v);
+				break;
+			// name attribute of the password form field
+			case "form.input.password.name":
+				passwordFormStr.append(v);
+				break;
+			default:
+			}
+		});
+
+		if
+		(
+			0 == username.length()
+			|| 0 == password.length()
+			|| 0 == loginUrl.length()
+			|| 0 == usernameFormStr.length()
+			|| 0 == passwordFormStr.length()
+		) 
+			return out;
+
+		out = new FormAuthInfo
+		(
+			username.toString()
+			, password.toString()
+			, loginUrl.toString()
+			, usernameFormStr.toString()
+			, passwordFormStr.toString()
+		);
+
+		// FIXME:2017-11-17:shinkou:This needs to be fixed in crawler4j
+		URL url = new URL(loginUrl.toString());
+		out.setPort(url.getPort());
+
+		return out;
+	}
 
 	/**
 	 * Start crawling with crawlers
@@ -38,57 +106,14 @@ public class AuthCrawler extends WebCrawler
 	{
 		try
 		{
-			StringBuilder username = new StringBuilder();
-			StringBuilder password = new StringBuilder();
-			StringBuilder loginUrl = new StringBuilder();
-			StringBuilder usernameFormStr = new StringBuilder();
-			StringBuilder passwordFormStr = new StringBuilder();
-
-			props.forEach
-			((k, v) -> {
-				switch(k)
-				{
-				// login username
-				case "username":
-					username.append(v);
-					break;
-				// login password
-				case "password":
-					password.append(v);
-					break;
-				// login URL where info is submitted to
-				case "form.action":
-					loginUrl.append(v);
-					break;
-				// name attribute of the username form field
-				case "form.input.username.name":
-					usernameFormStr.append(v);
-					break;
-				// name attribute of the password form field
-				case "form.input.password.name":
-					passwordFormStr.append(v);
-					break;
-				default:
-				}
-			});
-
 			// configurations
 			CrawlConfig config = new CrawlConfig();
 			config.setCrawlStorageFolder
 			(
 				props.getOrDefault("dir.save", "/tmp")
 			);
-			config.addAuthInfo
-			(
-				new FormAuthInfo
-				(
-					username.toString()
-					, password.toString()
-					, loginUrl.toString()
-					, usernameFormStr.toString()
-					, passwordFormStr.toString()
-				)
-			);
+			AuthInfo authinfo = getAuthInfo(props);
+			if (null != authinfo) config.addAuthInfo(authinfo);
 			PageFetcher pageFetcher = new PageFetcher(config);
 			RobotstxtConfig txtConfig = new RobotstxtConfig();
 			RobotstxtServer txtServer = new RobotstxtServer
