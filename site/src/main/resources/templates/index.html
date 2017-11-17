@@ -1,0 +1,17 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>User Page</title>
+	</head>
+	<body>
+		<h1 th:inline="text">Hi, [[${#httpServletRequest.remoteUser}]]!</h1>
+		<form method="POST" th:action="@{/logout}">
+			<input type="submit" value="Sign Out"/>
+		</form>
+		<ul>
+			<li><a th:href="@{/page/First_Story}">First</a></li>
+			<li><a th:href="@{/page/Second_Story}">Second</a></li>
+			<li><a th:href="@{/page/Third_Story}">Third</a></li>
+		</ul>
+	</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+	<head>
+		<title>Error</title>
+	</head>
+	<body>
+		<p th:if="${status}">
+			<span th:text="${status}">Status Code</span>
+		</p>
+		<p th:if="${url}">
+			<span th:text="${url}">Page URL</span>
+		</p>
+		<p th:text="${error}"/>
+		<div th:if="${ex} or ${exception} or (${message} and ${message.length() != 0})">
+			<span th:if="${ex}" th:text="${ex}">exception ...</span>
+			<span th:if="${exception}" th:text="${exception}">exception ...</span>
+			<span th:if="${message} and ${message.length() != 0}" th:text="${message}">message ...</span>
+		</div>
+		<a href="/" th:href="@{/}">Back to Home</a>
+	</body>
+</html>
