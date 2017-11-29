@@ -66,15 +66,21 @@ $ java -jar ./crawler/target/crawler-0.1.0.jar [ URL [ URL [ URL ... ] ] ]
 
 ### Optional System Properties
 
-| Name      | Default Value |
-|-----------|---------------|
-| conf.path |               |
-| instances | 1             |
+| Name                   | Default Value |
+|------------------------|---------------|
+| conf.path              |               |
+| instances              | 1             |
+| webdriver.gecko.driver |               |
+
+- **webdriver.gecko.driver** is needed only when configuration
+  **webdriver.enabled** is set to true.
+- the binary **webdriver.gecko.driver** points to must be executable.
 
 #### Example
 
 ```
 $ java -Dconf.path=path/to/conf -Dinstances=1 \
+  -Dwebdriver.gecko.driver=path/to/geckodriver \
   -jar ./crawler/target/crawler-0.1.0.jar \
   'http://localhost:8080/'
 ```
